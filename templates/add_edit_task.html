@@ -14,7 +14,17 @@
                 <textarea name="description" row="3" class="form-control">{{ task.description if task }}
                 </textarea>
             </div>
+            <div class="mb-3">
+                <label class="form-label">Due Date</label>
+                <input type="date" name="due_date" class="form-control"
+                       value="{{ task.due_date.isoformat() if task and task.due_date }}">
+            </div>
 
+            <div class="mb-3">
+                <label class="form-label">Due Time</label>
+                <input type="time" name="due_time" class="form-control"
+                       value="{{ task.due_time if task and task.due_time }}">
+            </div>
             {% if task %}
             <div class="mb-3">
                 <label class="form-label">Status</label>

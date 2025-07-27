@@ -17,6 +17,8 @@
                         <tr>
                             <th>Title</th>
                             <th>Description</th>
+                            <th>Due Date</th>
+                            <th>Due Time</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
@@ -26,6 +28,8 @@
                         <tr>
                             <td>{{ task.title }}</td>
                             <td>{{ task.description or '' }}</td>
+                            <td>{{ task.due_date }}</td>
+                            <td>{{ task.due_time }}</td>
                             <td>
                                 <span class="badge rounded-pill
                                     {% if task.status == 'Completed' %}bg-success

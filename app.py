@@ -6,6 +6,7 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 # UserMixin: A helper class: is_authenticated, is_active, get_id etc.
 
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime, date, timedelta
 
 app = Flask(__name__)
 
@@ -30,7 +31,8 @@ class Task(db.Model):
     description = db.Column(db.String(200), nullable=True)
     status = db.Column(db.String(20), default='Pending')   # pending/ In Progress/ Completed
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-
+    due_date = db.Column(db.Date, default= lambda : date.today()+ timedelta(days=1))  # tomorrows date as default
+    due_time = db.Column(db.String, default= lambda: datetime.now().strftime('%H:%M'))
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -99,10 +101,15 @@ def add_task():
     if request.method == 'POST':
         title = request.form['title']
         description = request.form['description']
+        due_date_str = request.form['due_date']
+        due_date = datetime.strptime(due_date_str, "%Y-%m-%d").date()  # converted string into date format
+        due_time = request.form['due_time']
 
         new_task = Task(
             title=title,
             description=description,
+            due_date=due_date,
+            due_time=due_time,
             user_id=current_user.id
         )
 
@@ -119,12 +126,15 @@ def add_task():
 def edit_task(task_id):
     task = Task.query.get_or_404(task_id)
 
-    if task.user_id!=current_user.id:
+    if task.user_id != current_user.id:
         flash('Access denied!', 'error')
         return redirect(url_for('dashboard'))
     if request.method == 'POST':
         task.title = request.form['title']
         task.description = request.form['description']
+        due_date_str = request.form['due_date']
+        task.due_date = datetime.strptime(due_date_str, "%Y-%m-%d").date()  # converted string into date format
+        task.due_time = request.form['due_time']
         task.status = request.form['status']
 
         db.session.commit()
