@@ -7,6 +7,7 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, date, timedelta
+from models import db, User, Task
 
 app = Flask(__name__)
 
@@ -14,45 +15,37 @@ app.secret_key = 'mysecretkey'
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
+db.init_app(app)
 
 login_manager = LoginManager()
 login_manager.login_view = 'login'
 login_manager.init_app(app)
 
-class User(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(200), unique=True, nullable=False)
-    password = db.Column(db.String(200), nullable=False)
-
-class Task(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(200), nullable=False)
-    description = db.Column(db.String(200), nullable=True)
-    status = db.Column(db.String(20), default='Pending')   # pending/ In Progress/ Completed
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    due_date = db.Column(db.Date, default= lambda : date.today()+ timedelta(days=1))  # tomorrows date as default
-    due_time = db.Column(db.String, default= lambda: datetime.now().strftime('%H:%M'))
 
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
 
-@app.route('/', methods=['GET', 'POST'])
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
 
     if request.method == 'POST':
         username = request.form['username']
+        email = request.form['email']
         password = request.form['password']
 
         if User.query.filter_by(username = username).first():
             flash('Username taken! Try another.', 'error')
             return redirect(url_for('register'))
+        if User.query.filter_by(email = email).first():
+            flash('Email already registered! Try login.', 'error')
+            return redirect(url_for('login'))
 
         new_user = User(
             username=username,
+            email=email,
             password = generate_password_hash(password, method='pbkdf2:sha256')
         )
 
@@ -64,16 +57,18 @@ def register():
     return render_template('register.html')
 
 
+@app.route('/', methods=['GET', 'POST'])
 @app.route('/login', methods=['GET', 'POST'])
 def login():
 
     if request.method == 'POST':
-        username = request.form['username']
+        identifier = request.form['username-email']
         password = request.form['password']
 
-        user = User.query.filter_by(username=username).first()
+        user = User.query.filter((User.username == identifier) | (User.email == identifier)).first()
+
         if not user or not check_password_hash(user.password, password):
-            flash('Invalid credentials', 'error')
+            flash('Invalid password, try again.', 'error')
             return redirect(url_for('login'))
 
         login_user(user)
