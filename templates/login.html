@@ -1,35 +1,48 @@
 {% extends "base.html" %}
+{% set hide_navbar = True %}
 
 {% block content %}
-<div class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <div class="card shadow">
-                    <div class="card-body">
-                        <h2 class="card-title text-center mb-4">Login</h2>
+<div class="container mt-5 d-flex flex-column align-items-center">
 
-                        <form method="post">
-                            <div class="mb-3">
-                                <label for="username-email" class="form-label">Username/ Email</label>
-                                <input type="text" class="form-control" id="username-email" name="username-email">
-                            </div>
-                            <div class="mb-3">
-                                <label for="password" class="form-label">Password</label>
-                                <input type="password" class="form-control" id="password" name="password">
-                            </div>
-                            <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-success">Login</button>
-                            </div>
-                        </form>
+    <!-- App Title and Description -->
+    <div class="text-center mb-4">
+        <h1 class="fw-bold text-dark">Task Master</h1>
+        <p class="text-muted fs-5 mb-1">Your personal task assistant</p>
+        <p class="text-muted fs-6">Stay organized. Stay productive.</p>
+    </div>
 
-                        <div class="mt-3 text-center">
-                            <p>Don't have an account? <a href="{{ url_for('register') }}">Register</a></p>
+    <!-- Login Card -->
+    <div class="row justify-content-center w-100">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-body p-4">
+                    <h2 class="card-title text-center mb-4 fw-bold text-primary">Welcome Back</h2>
 
+                    <form method="post">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control rounded-3" id="username-email" name="username-email" placeholder="Username or Email">
+                            <label for="username-email">Username or Email</label>
                         </div>
+
+                        <div class="form-floating mb-4">
+                            <input type="password" class="form-control rounded-3" id="password" name="password" placeholder="Password">
+                            <label for="password">Password</label>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success btn-lg rounded-3">Log In</button>
+                        </div>
+                    </form>
+
+                    <div class="text-center mt-4">
+                        <small class="text-muted">
+                            Don't have an account?
+                            <a href="{{ url_for('register') }}" class="text-decoration-none fw-semibold">Register here</a>
+                        </small>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
+</div>
 {% endblock %}

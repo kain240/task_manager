@@ -1,13 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
-from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-
-# LoginManager: It controls how users log in and where to redirect unauthorized users.
-# UserMixin: A helper class: is_authenticated, is_active, get_id etc.
-
+from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime, date, timedelta
-from models import db, User, Task
+from datetime import datetime
+from models import db, User, Task, Notifications
+from routes import check_and_create_overdue_notifications
 
 app = Flask(__name__)
 
@@ -27,7 +23,6 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 
-
 @app.route('/register', methods=['GET', 'POST'])
 def register():
 
@@ -36,7 +31,7 @@ def register():
         email = request.form['email']
         password = request.form['password']
 
-        if User.query.filter_by(username = username).first():
+        if User.query.filter_by(username=username).first():
             flash('Username taken! Try another.', 'error')
             return redirect(url_for('register'))
         if User.query.filter_by(email = email).first():
@@ -80,12 +75,23 @@ def login():
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for('login'))
+    flash("You have been successfully logged out.", "success")
+    return render_template('logout.html')
+
+
+@app.context_processor
+def inject_notifications():
+    if current_user.is_authenticated:
+        notifications = Notifications.query.filter_by(user_id=current_user.id).first()
+        return dict(notifications=notifications)
+    return {}
 
 
 @app.route('/dashboard')
 @login_required
 def dashboard():
+    check_and_create_overdue_notifications()
+
     tasks = Task.query.filter_by(user_id=current_user.id).all()
     return render_template('dashboard.html', tasks=tasks)
 

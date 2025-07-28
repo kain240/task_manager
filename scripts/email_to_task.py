@@ -12,7 +12,7 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app import app
-from models import db, Task, User
+from models import db, Task, User, Notifications
 
 EMAIL = "captain.pika21@gmail.com"
 APP_PASSWORD = "etoi mbsm sgnq klxd"
@@ -110,6 +110,13 @@ def fetch_emails():
                         user_id=user.id
                     )
                     db.session.add(new_task)
+                    db.session.commit()
+
+                    new_notification = Notifications(
+                        user_id=user.id,
+                        message = "New task added from email."
+                    )
+                    db.session.add(new_notification)
                     db.session.commit()
                     print(f"✅ Task saved: {task_data['title']}")
                 else:
